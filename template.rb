@@ -9,9 +9,9 @@ inject_into_file "Gemfile", after: "group :development do" do
 end
 
 # rubocop:disable Layout/LineLength
-run 'curl -L https://raw.githubusercontent.com/juliantrueflynn/webpacker_react_typescript_rails_template/main/.rubocop.yml > .rubocop.yml'
+run "curl -L https://raw.githubusercontent.com/juliantrueflynn/webpacker_react_typescript_rails_template/main/.rubocop.yml > .rubocop.yml"
 # rubocop:enable Layout/LineLength
 
 after_bundle do
-  run 'rubocop -a'
+  run "rubocop -a"
 end
