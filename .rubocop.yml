@@ -24,12 +24,19 @@ Style/MixinUsage:
   Exclude:
     - bin/*
 
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+  ConsistentQuotesInMultiline: false
+
 Naming/MemoizedInstanceVariableName:
   Enabled: true
   EnforcedStyleForLeadingUnderscores: required
 
 Style/Documentation:
   Enabled: false
+
+Layout/LineLength:
+  Max: 120
 
 Layout/EmptyLinesAroundAttributeAccessor:
   Enabled: true
