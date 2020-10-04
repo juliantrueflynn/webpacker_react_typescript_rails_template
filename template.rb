@@ -47,13 +47,7 @@ else
   end
 end
 
-run <<~YARN.squish
-  yarn add -s
-  @types/node
-  core-js
-  regenerator-runtime
-YARN
-
+run "yarn add -s @types/node core-js regenerator-runtime"
 run <<~YARN.squish
   yarn add -D -s
   @pmmmwh/react-refresh-webpack-plugin
@@ -84,27 +78,38 @@ copy_file "files/.eslintignore", ".eslintignore"
 copy_file "files/.eslintrc.json", ".eslintrc.json"
 copy_file "files/.rubocop.yml", ".rubocop.yml"
 
-after_bundle do
+def run_webpacker_generators
   rails_command "webpacker:install:react"
   rails_command "webpacker:install:typescript"
+end
+
+def apply_babel_config_changes
+  # Setup fast refresh config.
+  inject_into_file "babel.config.js", after: "plugins: [" do
+    "\n      (process.env.WEBPACK_DEV_SERVER) && 'react-refresh/babel',"
+  end
+
+  # Remove babel-plugin-transform-react-prop-types from babel config.
+  gsub_file(
+    "babel.config.js",
+    /,\s+isProductionEnv && \[.*'babel-plugin-transform-react-remove-prop-types'.*\]/ms,
+    "\n    ]"
+  )
+end
+
+after_bundle do
+  run_webpacker_generators
+
+  copy_file "files/config/webpack/development.js", "config/webpack/development.js", force: true
 
   run "rubocop -a &>/dev/null"
 
-  run <<~YARN.squish
-    yarn remove -s
-    prop-types
-    babel-plugin-transform-react-remove-prop-types
-  YARN
+  run "yarn remove -s prop-types babel-plugin-transform-react-remove-prop-types"
 
   remove_file "app/javascript/packs/hello_react.jsx"
   remove_file "app/javascript/packs/hello_typescript.ts"
   empty_directory "app/javascript/src"
   run "mv app/javascript/packs/application.js app/javascript/packs/application.ts"
 
-  # Remove babel-plugin-transform-react-prop-types from babel config
-  gsub_file(
-    "babel.config.js",
-    /,\s+isProductionEnv && \[.*'babel-plugin-transform-react-remove-prop-types'.*\]/ms,
-    "\n    ]"
-  )
+  apply_babel_config_changes
 end
