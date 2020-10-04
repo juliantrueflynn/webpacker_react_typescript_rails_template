@@ -97,8 +97,31 @@ def apply_babel_config_changes
   )
 end
 
+def setup_rspec
+  generate "rspec:install"
+
+  inject_into_file "spec/rails_helper.rb", before: "# This file is copied to spec/" do
+    <<~RUBY
+      require "simplecov"
+      SimpleCov.start "rails"
+
+    RUBY
+  end
+  inject_into_file "spec/rails_helper.rb", after: "Rails is not loaded until this point!" do
+    "\n" + 'require "faker"'
+  end
+
+  directory "files/spec/support", "spec/support"
+  comment_lines "spec/rails_helper.rb", /config\.fixture_path =/
+  uncomment_lines "spec/rails_helper.rb", /Dir\[Rails\.root\.join/
+  # RSpec uses comment blocks to comment out config in spec_helper.
+  gsub_file "spec/spec_helper.rb", "=begin", ""
+  gsub_file "spec/spec_helper.rb", "=end", ""
+end
+
 after_bundle do
   run_webpacker_generators
+  setup_rspec
 
   copy_file "files/config/webpack/development.js", "config/webpack/development.js", force: true
 
@@ -108,7 +131,6 @@ after_bundle do
 
   remove_file "app/javascript/packs/hello_react.jsx"
   remove_file "app/javascript/packs/hello_typescript.ts"
-  empty_directory "app/javascript/src"
   run "mv app/javascript/packs/application.js app/javascript/packs/application.ts"
 
   apply_babel_config_changes
