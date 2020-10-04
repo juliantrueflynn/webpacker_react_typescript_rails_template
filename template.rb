@@ -82,11 +82,9 @@ after_bundle do
   rails_command "webpacker:install:react"
   rails_command "webpacker:install:typescript"
 
-  # rubocop:disable Layout/LineLength
-  run "curl -L https://raw.githubusercontent.com/juliantrueflynn/webpacker_react_typescript_rails_template/master/.eslintignore > .eslintignore"
-  run "curl -L https://raw.githubusercontent.com/juliantrueflynn/webpacker_react_typescript_rails_template/master/.eslintrc.json > .eslintrc.json"
-  run "curl -L https://raw.githubusercontent.com/juliantrueflynn/webpacker_react_typescript_rails_template/main/.rubocop.yml > .rubocop.yml"
-  # rubocop:enable Layout/LineLength
+  run "curl -L https://raw.githubusercontent.com/juliantrueflynn/webpacker_react_typescript_rails_template/master/files/.eslintignore > .eslintignore"
+  run "curl -L https://raw.githubusercontent.com/juliantrueflynn/webpacker_react_typescript_rails_template/master/files/.eslintrc.json > .eslintrc.json"
+  run "curl -L https://raw.githubusercontent.com/juliantrueflynn/webpacker_react_typescript_rails_template/main/files/.rubocop.yml > .rubocop.yml"
   run "rubocop -a &>/dev/null"
 
   run <<~YARN.squish
