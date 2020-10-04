@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+source_paths.unshift(File.dirname(__FILE__))
+
 # Cleanup Gemfile
 gsub_file "Gemfile", "gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]\n", ""
 gsub_file "Gemfile", "# Windows does not include zoneinfo files, so bundle the tzinfo-data gem\n", ""
@@ -29,10 +31,10 @@ if File.read("Gemfile").match?(/group :test do/)
   inject_into_file "Gemfile", after: "group :test do" do
     <<-RUBY
 
-    gem "faker"
-    gem "shoulda-matchers"
-    gem "simplecov", require: false
-    gem "webmock", require: false
+  gem "faker"
+  gem "shoulda-matchers"
+  gem "simplecov", require: false
+  gem "webmock", require: false
     RUBY
   end
 else
@@ -78,13 +80,14 @@ run <<~YARN.squish
   react-refresh
 YARN
 
+copy_file "files/.eslintignore", ".eslintignore"
+copy_file "files/.eslintrc.json", ".eslintrc.json"
+copy_file "files/.rubocop.yml", ".rubocop.yml"
+
 after_bundle do
   rails_command "webpacker:install:react"
   rails_command "webpacker:install:typescript"
 
-  run "curl -L https://raw.githubusercontent.com/juliantrueflynn/webpacker_react_typescript_rails_template/master/files/.eslintignore > .eslintignore"
-  run "curl -L https://raw.githubusercontent.com/juliantrueflynn/webpacker_react_typescript_rails_template/master/files/.eslintrc.json > .eslintrc.json"
-  run "curl -L https://raw.githubusercontent.com/juliantrueflynn/webpacker_react_typescript_rails_template/main/files/.rubocop.yml > .rubocop.yml"
   run "rubocop -a &>/dev/null"
 
   run <<~YARN.squish
@@ -93,10 +96,10 @@ after_bundle do
     babel-plugin-transform-react-remove-prop-types
   YARN
 
-  run "rm app/javascript/packs/hello_react.jsx"
-  run "rm app/javascript/packs/hello_typescript.ts"
+  remove_file "app/javascript/packs/hello_react.jsx"
+  remove_file "app/javascript/packs/hello_typescript.ts"
+  empty_directory "app/javascript/src"
   run "mv app/javascript/packs/application.js app/javascript/packs/application.ts"
-  run "mkdir app/javascript/src"
 
   # Remove babel-plugin-transform-react-prop-types from babel config
   gsub_file(
