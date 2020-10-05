@@ -2,11 +2,13 @@
 
 def source_directory
   if __FILE__ =~ %r{\Ahttps?://}
-    source_paths.unshift(File.dirname(__FILE__))
+    "files"
   else
-    source_paths.unshift("#{File.dirname(__FILE__)}/tree/fix-remote-paths/files")
+    "tree/fix-remote-paths/files"
   end
 end
+
+source_paths.unshift(File.dirname(__FILE__))
 
 def say_info(message)
   say "-------------------------------------------------------------------------", :blue
