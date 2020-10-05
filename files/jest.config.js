@@ -8,10 +8,7 @@ module.exports = {
   collectCoverageFrom: [
     '**/*.{ts,tsx}',
     '!**/*.d.ts',
-    '!types/*.ts',
-    '!packs/*.tsx',
     '!coverage/**/*',
-    '!constants/*.ts'
   ],
   moduleDirectories: [
     'node_modules',
