@@ -79,6 +79,7 @@ def run_webpacker_generators
   gsub_file "package.json", /"babel-plugin-transform-react-remove-prop-types": ".*?".*?$/, ""
 
   rails_command "webpacker:install:typescript"
+  gsub_file "config/webpacker.yml", "hmr: false", "hmr: true"
 end
 
 def apply_babel_config_changes
