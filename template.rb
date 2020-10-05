@@ -1,20 +1,38 @@
 # frozen_string_literal: true
 
-def source_directory
+require "fileutils"
+require "shellwords"
+
+# Add this template directory to source_paths so that Thor actions like
+# copy_file and template resolve against our source files. If this file was
+# invoked remotely via HTTP, that means the files are not present locally.
+# In that case, use `git clone` to download them to a local temporary dir.
+def add_template_repository_to_source_path
   if __FILE__ =~ %r{\Ahttps?://}
-    "files"
+    require "tmpdir"
+    source_paths.unshift(tempdir = Dir.mktmpdir("rails-template-"))
+    at_exit { FileUtils.remove_entry(tempdir) }
+    git clone: [
+      "--quiet",
+      "https://github.com/juliantrueflynn/webpacker_react_typescript_rails_template.git",
+      tempdir
+    ].map(&:shellescape).join(" ")
+
+    if (branch = __FILE__[%r{webpacker_react_typescript_rails_template/(.+)/template.rb}, 1])
+      Dir.chdir(tempdir) { git checkout: branch }
+    end
   else
-    "tree/fix-remote-paths/files"
+    source_paths.unshift(File.dirname(__FILE__))
   end
 end
-
-source_paths.unshift(File.dirname(__FILE__))
 
 def say_info(message)
   say "-------------------------------------------------------------------------", :blue
   say message, :blue
   say "-------------------------------------------------------------------------", :blue
 end
+
+add_template_repository_to_source_path
 
 # Cleanup Gemfile
 say_info "Cleanup Gemfile and ensure latest version of webpacker"
@@ -205,7 +223,7 @@ after_bundle do
   run_webpacker_generators
 
   say_info "Copying files"
-  directory source_directory, "./", force: true
+  directory "files", "./", force: true
 
   say_info "Adding yarn dependencies"
   apply_extra_yarn_dependencies_and_scripts
