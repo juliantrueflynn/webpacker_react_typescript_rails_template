@@ -6,7 +6,7 @@ REPO_URL = "https://github.com/juliantrueflynn/#{REPO_SLUG}.git"
 def unshift_remote_path
   source_paths.unshift(tempdir = Dir.mktmpdir("_temp_#{REPO_SLUG}"))
   at_exit { FileUtils.remove_entry(tempdir) }
-  puts "****************" +  ["--quiet", REPO_URL, tempdir].map(&:shellescape).join(" ")
+  say "****************" +  ["--quiet", REPO_URL, tempdir].map(&:shellescape).join(" ")
   git clone: ["--quiet", REPO_URL, tempdir].map(&:shellescape).join(" ")
   branch = __FILE__[%r{#{REPO_SLUG}/(.+)/template.rb}, 1]
   Dir.chdir(tempdir) { git checkout: branch } if (branch)
