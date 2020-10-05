@@ -1,12 +1,18 @@
 # frozen_string_literal: true
 
+def source_directory
+  if __FILE__ =~ %r{\Ahttps?://}
+    source_paths.unshift(File.dirname(__FILE__))
+  else
+    source_paths.unshift("#{File.dirname(__FILE__)}/tree/master/files")
+  end
+end
+
 def say_info(message)
   say "-------------------------------------------------------------------------", :blue
   say message, :blue
   say "-------------------------------------------------------------------------", :blue
 end
-
-source_paths.unshift(File.dirname(__FILE__))
 
 # Cleanup Gemfile
 say_info "Cleanup Gemfile and ensure latest version of webpacker"
@@ -197,7 +203,7 @@ after_bundle do
   run_webpacker_generators
 
   say_info "Copying files"
-  directory "files", "./", force: true
+  directory source_directory, "./", force: true
 
   say_info "Adding yarn dependencies"
   apply_extra_yarn_dependencies_and_scripts
