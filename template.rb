@@ -15,6 +15,11 @@ gsub_file "Gemfile", "# Windows does not include zoneinfo files, so bundle the t
 gsub_file "Gemfile", "gem 'webpacker', '~> 4.0'", 'gem "webpacker", ">= 5.2"'
 
 say_info "Install gems"
+# Gems group: all
+inject_into_file "Gemfile", before: "group :development, :test do" do
+  'gem "dotenv-rails", require: "dotenv/rails-now"' + "\n"
+end
+
 # Gems group: development, test
 inject_into_file "Gemfile", after: "group :development, :test do" do
   <<-RUBY
@@ -52,6 +57,18 @@ else
     gem "simplecov", require: false
     gem "webmock", require: false
   end
+end
+
+# Environment custom configurations
+inject_into_file "config/application.rb", after: /config.load_defaults .*?$/ do
+  <<-RUBY
+
+
+    config.x.capybara_max_wait_time = ENV.fetch("CAPYBARA_MAX_WAIT_TIME", 5)
+    config.x.selenium_host = ENV.fetch("SELENIUM_HOST", "selenium")
+    config.x.selenium_port = ENV.fetch("SELENIUM_PORT", "4444")
+    config.x.selenium_server_host = ENV.fetch("SELENIUM_SERVER_HOST", "web")
+  RUBY
 end
 
 def run_webpacker_generators
@@ -157,19 +174,21 @@ def apply_extra_yarn_dependencies_and_scripts
   end
 
   # Cleaning up package.json formatting issues from previous injections.
-  run "eslint 'package.json' --fix"
+  run "node_modules/.bin/eslint 'package.json' --fix"
 end
 
 after_bundle do
-  say_info "Setting up webpacker and yarn dependencies"
+  say_info "Setting up webpacker"
   run_webpacker_generators
+
+  say_info "Copying files"
+  directory "files", "./", force: true
+
+  say_info "Adding yarn dependencies"
   apply_extra_yarn_dependencies_and_scripts
 
   say_info "Setting up rspec"
   setup_rspec
-
-  say_info "Copying files"
-  directory "files", "./", force: true
 
   say_info "Cleaning generated files with rubocop"
   run "rubocop -a &>/dev/null"
