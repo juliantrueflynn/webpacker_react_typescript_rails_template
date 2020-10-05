@@ -9,12 +9,12 @@ end
 source_paths.unshift(File.dirname(__FILE__))
 
 # Cleanup Gemfile
-say "Cleanup Gemfile and ensure latest version of webpacker"
+say_info "Cleanup Gemfile and ensure latest version of webpacker"
 gsub_file "Gemfile", "gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]\n", ""
 gsub_file "Gemfile", "# Windows does not include zoneinfo files, so bundle the tzinfo-data gem\n", ""
 gsub_file "Gemfile", "gem 'webpacker', '~> 4.0'", 'gem "webpacker", ">= 5.2"'
 
-say "Install gems"
+say_info "Install gems"
 # Gems group: development, test
 inject_into_file "Gemfile", after: "group :development, :test do" do
   <<-RUBY
@@ -100,10 +100,7 @@ def setup_rspec
   run "spring stop"
 end
 
-after_bundle do
-  say_info "Setting up webpacker and yarn dependencies"
-  run_webpacker_generators
-
+def apply_extra_yarn_dependencies_and_scripts
   run "yarn add -s @types/node core-js regenerator-runtime"
   run <<~YARN.squish
     yarn add -D -s
@@ -113,8 +110,10 @@ after_bundle do
     @testing-library/user-event
     @types/jest
     @typescript-eslint/eslint-plugin
+    @typescript-eslint/parser
     babel-eslint
     babel-jest
+    eslint
     eslint-config-prettier
     eslint-plugin-import
     eslint-plugin-jest-dom
@@ -130,6 +129,41 @@ after_bundle do
     prettier
     react-refresh
   YARN
+
+  inject_into_file "package.json", after: /"private": true,\s+/ do
+    <<~JSON
+      "scripts": {
+        "test": "jest --verbose --watchAll",
+        "test:coverage": "jest --verbose --coverage",
+        "lint": "eslint 'app/javascript/**/*.{ts,tsx,js}'",
+        "lint:fix": "eslint 'app/javascript/**/*.{ts,tsx,js}' --fix"
+      },
+    JSON
+  end
+
+  inject_into_file "package.json", before: /}\s+}\s+/ do
+    <<~JSON
+      },
+      "husky": {
+        "hooks": {
+          "pre-commit": "lint-staged"
+        }
+      },
+      "lint-staged": {
+        "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
+          "eslint 'app/javascript/**/*.{ts,tsx,js}' --fix"
+        ]
+    JSON
+  end
+
+  # Cleaning up package.json formatting issues from previous injections.
+  run "eslint 'package.json' --fix"
+end
+
+after_bundle do
+  say_info "Setting up webpacker and yarn dependencies"
+  run_webpacker_generators
+  apply_extra_yarn_dependencies_and_scripts
 
   say_info "Setting up rspec"
   setup_rspec
