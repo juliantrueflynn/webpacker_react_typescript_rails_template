@@ -118,6 +118,20 @@ def setup_rspec
   run "spring stop"
 end
 
+def apply_changes_to_gitignore
+  append_to_file ".gitignore", <<~GIT
+
+  # Ignore RSpec generated file
+  spec/examples.txt
+
+  .env
+  .env.*
+  !.env.development
+
+  .DS_Store
+  GIT
+end
+
 def apply_extra_yarn_dependencies_and_scripts
   run "yarn add -s @types/node core-js regenerator-runtime"
   run <<~YARN.squish
@@ -190,6 +204,8 @@ after_bundle do
 
   say_info "Setting up rspec"
   setup_rspec
+
+  apply_changes_to_gitignore
 
   say_info "Cleaning generated files with rubocop"
   run "rubocop -a &>/dev/null"
