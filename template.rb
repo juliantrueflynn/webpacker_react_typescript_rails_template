@@ -4,7 +4,7 @@ def source_directory
   if __FILE__ =~ %r{\Ahttps?://}
     source_paths.unshift(File.dirname(__FILE__))
   else
-    source_paths.unshift("#{File.dirname(__FILE__)}/tree/master/files")
+    source_paths.unshift("#{File.dirname(__FILE__)}/tree/fix-remote-paths/files")
   end
 end
 
