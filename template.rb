@@ -1,7 +1,15 @@
 # frozen_string_literal: true
 
-require "fileutils"
-require "shellwords"
+REPO_SLUG = "webpacker_react_typescript_rails_template"
+REPO_URL = "https://github.com/juliantrueflynn/#{REPO_SLUG}.git"
+
+def unshift_remote_path
+  source_paths.unshift(tempdir = Dir.mktmpdir("_temp_#{REPO_SLUG}"))
+  at_exit { FileUtils.remove_entry(tempdir) }
+  git clone: ["--quiet", REPO_URL, tempdir].map(&:shellescape).join(" ")
+  branch = __FILE__[%r{#{REPO_SLUG}/(.+)/template.rb}, 1]
+  Dir.chdir(tempdir) { git checkout: branch } if (branch)
+end
 
 # Add this template directory to source_paths so that Thor actions like
 # copy_file and template resolve against our source files. If this file was
@@ -9,18 +17,10 @@ require "shellwords"
 # In that case, use `git clone` to download them to a local temporary dir.
 def add_template_repository_to_source_path
   if __FILE__ =~ %r{\Ahttps?://}
+    require "shellwords"
     require "tmpdir"
-    source_paths.unshift(tempdir = Dir.mktmpdir("rails-template-"))
-    at_exit { FileUtils.remove_entry(tempdir) }
-    git clone: [
-      "--quiet",
-      "https://github.com/juliantrueflynn/webpacker_react_typescript_rails_template.git",
-      tempdir
-    ].map(&:shellescape).join(" ")
 
-    if (branch = __FILE__[%r{webpacker_react_typescript_rails_template/(.+)/template.rb}, 1])
-      Dir.chdir(tempdir) { git checkout: branch }
-    end
+    unshift_remote_path
   else
     source_paths.unshift(File.dirname(__FILE__))
   end
