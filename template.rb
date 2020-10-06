@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 apply File.expand_path("./helpers/logger", __FILE__)
+apply File.expand_path("./helpers/remote_source_path", __FILE__)
 
+include RemoteSourcePath
 extend Logger
 
 if __FILE__ =~ %r{\Ahttps?://}
-  apply File.expand_path("./helpers/remote_source_path", __FILE__)
-  include RemoteSourcePath
   RemoteSourcePath.new(__FILE__).add_path
 else
   source_paths.unshift(File.dirname(__FILE__))
