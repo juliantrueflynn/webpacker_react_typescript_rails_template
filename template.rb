@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-say "*********************************************************************** V2"
+say "*********************************************************************** V3"
 
 apply File.expand_path("./helpers/logger", __FILE__)
-apply File.expand_path("./helpers/remote_source_path", __FILE__)
+# apply File.expand_path("./helpers/remote_source_path", __FILE__)
 
 include RemoteSourcePath
 extend Logger
@@ -11,7 +11,7 @@ extend Logger
 say_info "************************** V1"
 
 if __FILE__ =~ %r{\Ahttps?://}
-  RemoteSourcePath.new(__FILE__).add_path
+  RemoteSourcePath.new(source_paths, __FILE__).add_path
 else
   source_paths.unshift(File.dirname(__FILE__))
 end

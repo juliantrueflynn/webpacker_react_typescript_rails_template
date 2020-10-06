@@ -13,12 +13,13 @@ class RemoteSourcePath
   TEMP_DIRECTORY_NAME = "_temp_#{REPO_SLUG}"
   TEMPLATE_FILE = "template.rb"
 
-  def initialize(path)
+  def initialize(source_paths, path)
+    @source_paths = source_paths
     @path = path
   end
 
   def add_path
-    source_paths.unshift(temp_directory)
+    @source_paths.unshift(temp_directory)
     at_exit { FileUtils.remove_entry(temp_directory) }
     build_git_clone
     Dir.chdir(temp_directory) { git checkout: git_branch } if (git_branch)
