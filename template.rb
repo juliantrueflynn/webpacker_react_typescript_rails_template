@@ -1,39 +1,16 @@
 # frozen_string_literal: true
 
-REPO_SLUG = "webpacker_react_typescript_rails_template"
-REPO_URL = "https://github.com/juliantrueflynn/#{REPO_SLUG}.git"
+apply File.expand_path("./helpers/logger", __FILE__)
 
-def unshift_remote_path
-  source_paths.unshift(tempdir = Dir.mktmpdir("_temp_#{REPO_SLUG}"))
-  at_exit { FileUtils.remove_entry(tempdir) }
-  say "****************" +  ["--quiet", REPO_URL, tempdir].map(&:shellescape).join(" ")
-  git clone: ["--quiet", REPO_URL, tempdir].map(&:shellescape).join(" ")
-  branch = __FILE__[%r{#{REPO_SLUG}/(.+)/template.rb}, 1]
-  Dir.chdir(tempdir) { git checkout: branch } if (branch)
+extend Logger
+
+if __FILE__ =~ %r{\Ahttps?://}
+  apply File.expand_path("./helpers/remote_source_path", __FILE__)
+  include RemoteSourcePath
+  RemoteSourcePath.new(__FILE__).add_path
+else
+  source_paths.unshift(File.dirname(__FILE__))
 end
-
-# Add this template directory to source_paths so that Thor actions like
-# copy_file and template resolve against our source files. If this file was
-# invoked remotely via HTTP, that means the files are not present locally.
-# In that case, use `git clone` to download them to a local temporary dir.
-def add_template_repository_to_source_path
-  if __FILE__ =~ %r{\Ahttps?://}
-    require "shellwords"
-    require "tmpdir"
-
-    unshift_remote_path
-  else
-    source_paths.unshift(File.dirname(__FILE__))
-  end
-end
-
-def say_info(message)
-  say "-------------------------------------------------------------------------", :blue
-  say message, :blue
-  say "-------------------------------------------------------------------------", :blue
-end
-
-add_template_repository_to_source_path
 
 # Cleanup Gemfile
 say_info "Cleanup Gemfile and ensure latest version of webpacker"
