@@ -6,6 +6,8 @@ apply File.expand_path("./helpers/remote_source_path", __FILE__)
 include RemoteSourcePath
 extend Logger
 
+say_info "************************** V1"
+
 if __FILE__ =~ %r{\Ahttps?://}
   RemoteSourcePath.new(__FILE__).add_path
 else
