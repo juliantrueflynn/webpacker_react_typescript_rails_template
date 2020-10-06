@@ -4,15 +4,15 @@ require "shellwords"
 require "tmpdir"
 require "fileutils"
 
-say "******************************************* v5"
+say "******************************************* v6"
 
 REPO_SLUG = "webpacker_react_typescript_rails_template"
 REPO_URL = "https://github.com/juliantrueflynn/#{REPO_SLUG}.git"
 
 def unshift_remote_path
   source_paths.unshift(tempdir = Dir.mktmpdir("_temp_#{REPO_SLUG}"))
-  at_exit { FileUtils.remove_entry(tempdir) }
-  git clone: ShellWords.join(["--quiet", REPO_URL, tempdir])
+  at_exit { ::FileUtils.remove_entry(tempdir) }
+  git clone: ::ShellWords.join(["--quiet", REPO_URL, tempdir])
   branch = __FILE__[%r{#{REPO_SLUG}/(.+)/template.rb}, 1]
   Dir.chdir(tempdir) { git checkout: branch } if (branch)
 end
