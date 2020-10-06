@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
-say "******************************************* v4"
+require "shellwords"
+require "tmpdir"
+require "fileutils"
+
+say "******************************************* v5"
 
 REPO_SLUG = "webpacker_react_typescript_rails_template"
 REPO_URL = "https://github.com/juliantrueflynn/#{REPO_SLUG}.git"
@@ -19,10 +23,6 @@ end
 # In that case, use `git clone` to download them to a local temporary dir.
 def add_template_repository_to_source_path
   if __FILE__ =~ %r{\Ahttps?://}
-    require "shellwords"
-    require "tmpdir"
-    require "fileutils"
-
     unshift_remote_path
   else
     source_paths.unshift(File.dirname(__FILE__))
