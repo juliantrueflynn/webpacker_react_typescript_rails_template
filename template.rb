@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+say "*********************************************************************** V2"
+
 apply File.expand_path("./helpers/logger", __FILE__)
 apply File.expand_path("./helpers/remote_source_path", __FILE__)
 
